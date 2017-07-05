@@ -20,20 +20,27 @@ import java.io.IOException;
 public class NPMBuilder extends Builder {
     private static final int SUCCESS = 0;
 
+    private static final String GLOBAL_FLAG = "global";
+
     private final String command;
 
-    @DataBoundConstructor
-    public NPMBuilder(String command) {
-        this.command = command;
-    }
+    private final boolean sudo;
+    private final boolean global;
 
+    @DataBoundConstructor
+    public NPMBuilder(String command,
+                      boolean global, boolean sudo) {
+        this.command    = command;
+        this.global     = global;
+        this.sudo       = sudo;
+    }
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         try {
 
             int result = launcher.launch()
-                    .cmdAsSingleString(String.format("%s %s", getDescriptor().getNpmHome(), command))
+                    .cmdAsSingleString(String.format("%s %s", getDescriptor().getNpmHome(), buildCommand()))
                     .stdout(listener.getLogger())
                     .stderr(listener.getLogger())
                     .pwd(build.getWorkspace())
@@ -48,6 +55,29 @@ public class NPMBuilder extends Builder {
         return false;
     }
 
+    private String buildCommand() {
+        StringBuilder stringBuilder;
+
+        if (isSudo()) {
+            stringBuilder = new StringBuilder(String.format("sudo %s %s", getDescriptor().getNpmHome(), command));
+        } else {
+            stringBuilder = new StringBuilder(String.format("%s %s", getDescriptor().getNpmHome(), command));
+        }
+
+        if (isGlobal()) {
+            appendFlag(stringBuilder, GLOBAL_FLAG);
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private static void appendFlag(final StringBuilder builder, final String flag, final String... opts) {
+        builder.append(String.format(" --%s", flag));
+        if (opts != null && opts.length > 0) {
+            builder.append(String.format(" %s", opts));
+        }
+    }
+
     @Override
     public NPMBuildStepDescriptor getDescriptor() {
         return (NPMBuildStepDescriptor) super.getDescriptor();
@@ -55,6 +85,14 @@ public class NPMBuilder extends Builder {
 
     public String getCommand() {
         return command;
+    }
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public boolean isSudo() {
+        return sudo;
     }
 
     @Extension

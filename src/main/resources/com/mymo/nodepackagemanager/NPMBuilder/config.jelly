@@ -3,4 +3,18 @@
   <f:entry title="Command" field="command">
     <f:textbox />
   </f:entry>
+  <f:advanced>
+    <f:section title="Advanced Configuration">
+      <f:entry title="Sudo" field="sudo">
+        <div>
+          <f:checkbox />
+        </div>
+      </f:entry>
+      <f:entry title="Global" field="global">
+        <div>
+          <f:checkbox />
+        </div>
+      </f:entry>
+     </f:section>
+   </f:advanced>
 </j:jelly>
