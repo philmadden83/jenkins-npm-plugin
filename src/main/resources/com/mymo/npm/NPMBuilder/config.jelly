@@ -10,11 +10,6 @@
           <f:checkbox />
         </div>
       </f:entry>
-      <f:entry title="Global" field="global">
-        <div>
-          <f:checkbox />
-        </div>
-      </f:entry>
      </f:section>
    </f:advanced>
 </j:jelly>

@@ -1,16 +1,12 @@
-package com.mymo.nodepackagemanager;
+package com.mymo.npm;
 
 import hudson.Launcher;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Run;
-import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
-import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -20,18 +16,12 @@ import java.io.IOException;
 public class NPMBuilder extends Builder {
     private static final int SUCCESS = 0;
 
-    private static final String GLOBAL_FLAG = "global";
-
     private final String command;
-
     private final boolean sudo;
-    private final boolean global;
 
     @DataBoundConstructor
-    public NPMBuilder(String command,
-                      boolean global, boolean sudo) {
+    public NPMBuilder(String command, boolean sudo) {
         this.command    = command;
-        this.global     = global;
         this.sudo       = sudo;
     }
 
@@ -59,23 +49,12 @@ public class NPMBuilder extends Builder {
         StringBuilder stringBuilder;
 
         if (isSudo()) {
-            stringBuilder = new StringBuilder(String.format("sudo %s %s", getDescriptor().getNpmHome(), command));
+            stringBuilder = new StringBuilder(String.format("sudo %s %s", getDescriptor().getNpmHome(), getCommand()));
         } else {
-            stringBuilder = new StringBuilder(String.format("%s %s", getDescriptor().getNpmHome(), command));
-        }
-
-        if (isGlobal()) {
-            appendFlag(stringBuilder, GLOBAL_FLAG);
+            stringBuilder = new StringBuilder(String.format("%s %s", getDescriptor().getNpmHome(), getCommand()));
         }
 
         return stringBuilder.toString();
-    }
-
-    private static void appendFlag(final StringBuilder builder, final String flag, final String... opts) {
-        builder.append(String.format(" --%s", flag));
-        if (opts != null && opts.length > 0) {
-            builder.append(String.format(" %s", opts));
-        }
     }
 
     @Override
@@ -85,10 +64,6 @@ public class NPMBuilder extends Builder {
 
     public String getCommand() {
         return command;
-    }
-
-    public boolean isGlobal() {
-        return global;
     }
 
     public boolean isSudo() {
