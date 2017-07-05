@@ -1,7 +1,7 @@
 Node Package Manager Plugin for Jenkins
 ---
 
-Simple plugin to enable invokation of npm commands within a build pipeline.
+Simple plugin to enable invocation of npm commands within a build pipeline.
 
 
 __Requirements__

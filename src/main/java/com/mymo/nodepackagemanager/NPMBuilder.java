@@ -3,7 +3,9 @@ package com.mymo.nodepackagemanager;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.Builder;
@@ -15,7 +17,9 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 
-public class NPMBuilder extends Builder implements SimpleBuildStep {
+public class NPMBuilder extends Builder {
+    private static final int SUCCESS = 0;
+
     private final String command;
 
     @DataBoundConstructor
@@ -25,14 +29,23 @@ public class NPMBuilder extends Builder implements SimpleBuildStep {
 
 
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         try {
-            launcher.launch()
+
+            int result = launcher.launch()
                     .cmdAsSingleString(String.format("%s %s", getDescriptor().getNpmHome(), command))
+                    .stdout(listener.getLogger())
+                    .stderr(listener.getLogger())
+                    .pwd(build.getWorkspace())
                     .join();
+
+            return result == SUCCESS;
+
         } catch (IOException | InterruptedException e) {
             listener.getLogger().append(e.getMessage());
         }
+
+        return false;
     }
 
     @Override
